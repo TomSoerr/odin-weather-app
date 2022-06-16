@@ -1,0 +1,56 @@
+*, *::after, *::before {
+  box-sizing: border-box;
+}
+
+:root {
+  --cultured: #f8f9faff;
+  --cultured-2: #e9ecefff;
+  --gainsboro: #dee2e6ff;
+  --light-gray: #ced4daff;
+  --cadet-blue-crayola: #adb5bdff;
+  --sonic-silver: #6c757dff;
+  --davys-grey: #495057ff;
+  --onyx: #343a40ff;
+  --eerie-black: #212529ff;
+  --font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+  --focus-color: #89d9fb;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 100vw;
+  min-height: 100vh;
+  font-family: var(--font-family);
+  color: var(--onyx);
+  background-color: var(--cultured);
+}
+
+#search {
+  background-color: var(--davys-grey);
+  padding: 1rem;
+  display: grid;
+  place-content: center;
+}
+
+#search input[type='search'] {
+  appearance: none;
+  border: thin solid var(--cultured);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  background-color: var(--davys-grey);
+  color: var(--cultured);
+  padding: 0.5rem;
+}
+
+#search input[type='search']::placeholder {
+  color: var(--cultured);
+}
+
+#search input[type='search']:focus {
+  outline: none;
+  background-color: var(--cultured);
+  color: var(--davys-grey);
+}
+

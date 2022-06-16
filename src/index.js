@@ -1,3 +1,6 @@
+import './style.css';
+import { buildPage, buildWeather } from './buildDom';
+
 class App {
   #content;
 
@@ -12,26 +15,52 @@ class App {
     this.#content.id = 'content';
     document.body.append(this.#content);
 
-    const btn = create('button');
-    btn.textContent = 'Call API';
-    this.#content.append(btn);
-    btn.addEventListener('click', this.#callApi.bind(this));
+    const [domObj, search] = buildPage();
+
+    search.addEventListener('keyup', (e) => {
+      if (e.keyCode === 13) {
+        this.#callApi(search.value);
+      }
+    });
+
+    this.#content.append(domObj);
   }
 
-  async #callApi() {
-    const response = await fetch(
-      `http://api.openweathermap.org/data/2.5/weather?q=Hamburg&appid=${
+  async #callApi(city) {
+    const geoResponse = await fetch(
+      `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${
         this.#openWeatherMap
-      }&units=metric`,
+      }`,
       { mode: 'cors' }
     );
-    const data = await response.json();
-    console.log(data);
-    this.#processData(data);
+    const geoData = await geoResponse.json();
+    const { lat } = geoData[0];
+    const { lon } = geoData[0];
+
+    const [weather, forecast] = await Promise.all([
+      fetch(
+        `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${
+          this.#openWeatherMap
+        }&units=metric`,
+        { mode: 'cors' }
+      ),
+      fetch(
+        `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&cnt=8&appid=${
+          this.#openWeatherMap
+        }&units=metric`,
+        { mode: 'cors' }
+      ),
+    ]);
+    const weatherData = await weather.json();
+    const forecastData = await forecast.json();
+
+    this.#processData({ weatherData, forecastData });
   }
 
-  #processData(data) {
-    const { name } = data;
+  #processData({ weatherData = {}, forecastData = {} }) {
+    const { name } = weatherData;
+
+    const { icon } = weatherData.weather[0];
 
     const days = [
       'Sunday',
@@ -43,33 +72,49 @@ class App {
       'Saturday',
     ];
     let today = new Date();
-    today = `${
-      days[today.getDay()]
-    }, ${today.getDate()}.${today.getMonth()}.${today.getFullYear()}`;
+    today = `${days[today.getDay()]}, ${today.getDate()}.${
+      today.getMonth() + 1
+    }.${today.getFullYear()}`;
 
-    const temperature = data.main.temp;
-    const temperatureMin = data.main.temp_min;
-    const temperatureMax = data.main.temp_max;
+    const temperature = `${Math.round(weatherData.main.temp)} °C`;
 
-    let sunrise = new Date(data.sys.sunrise * 1000);
+    const chanceOfRain = `${forecastData.list[0].pop * 100} %`;
+
+    const speed = `${Math.round(weatherData.wind.speed * 3.6)} km/h`;
+
+    const humidity = `${weatherData.main.humidity} %`;
+
+    let sunrise = new Date(weatherData.sys.sunrise * 1000);
     [sunrise] = sunrise.toTimeString().match(/^(\d{2}):(\d{2})/);
 
-    let sunset = new Date(data.sys.sunset * 1000);
+    let sunset = new Date(weatherData.sys.sunset * 1000);
     [sunset] = sunset.toTimeString().match(/^(\d{2}):(\d{2})/);
 
-    this.#showData({
+    const forecast = [];
+
+    forecastData.list.forEach((item) => {
+      forecast.push({
+        icon: item.weather[0].icon,
+        time: item.dt_txt.match(/ (\d{2}:\d{2})/)[1],
+        temperature: `${Math.round(item.main.temp)}°C`,
+        chanceOfRain: `${item.pop * 100}%`,
+        speed: `${Math.round(item.wind.speed * 3.6)}km/h`,
+      });
+    });
+
+    const domObj = buildWeather({
       name,
+      icon,
       today,
       temperature,
-      temperatureMin,
-      temperatureMax,
+      chanceOfRain,
+      speed,
+      humidity,
       sunset,
       sunrise,
+      forecast,
     });
-  }
-
-  #showData(data) {
-    console.log(data);
+    this.#content.append(domObj);
   }
 }
 
