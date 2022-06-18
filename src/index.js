@@ -1,6 +1,8 @@
 import './style.css';
 import { buildPage, buildWeather } from './buildDom';
 
+// TODO: fahrenheit
+
 class App {
   #content;
 
@@ -18,7 +20,7 @@ class App {
     const [domObj, search] = buildPage();
 
     search.addEventListener('keyup', (e) => {
-      if (e.keyCode === 13) {
+      if (e.key === 'Enter') {
         this.#callApi(search.value);
       }
     });
@@ -27,39 +29,54 @@ class App {
   }
 
   async #callApi(city) {
-    const geoResponse = await fetch(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${
-        this.#openWeatherMap
-      }`,
-      { mode: 'cors' }
-    );
-    const geoData = await geoResponse.json();
-    const { lat } = geoData[0];
-    const { lon } = geoData[0];
+    let lat;
+    let lon;
+    let name;
 
-    const [weather, forecast] = await Promise.all([
-      fetch(
-        `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${
+    try {
+      const geoResponse = await fetch(
+        `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${
           this.#openWeatherMap
-        }&units=metric`,
+        }`,
         { mode: 'cors' }
-      ),
-      fetch(
-        `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&cnt=8&appid=${
-          this.#openWeatherMap
-        }&units=metric`,
-        { mode: 'cors' }
-      ),
-    ]);
-    const weatherData = await weather.json();
-    const forecastData = await forecast.json();
+      );
+      const geoData = await geoResponse.json();
+      console.log('Geo Data:', geoData);
+      lat = geoData[0].lat;
+      lon = geoData[0].lon;
+      name = `${geoData[0].name}, ${geoData[0].state}`;
+    } catch {
+      alert('could not find location');
+    }
 
-    this.#processData({ weatherData, forecastData });
+    if (lat != null && lon != null && name != null) {
+      try {
+        const [weather, forecast] = await Promise.all([
+          fetch(
+            `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${
+              this.#openWeatherMap
+            }&units=metric`,
+            { mode: 'cors' }
+          ),
+          fetch(
+            `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&cnt=8&appid=${
+              this.#openWeatherMap
+            }&units=metric`,
+            { mode: 'cors' }
+          ),
+        ]);
+        const weatherData = await weather.json();
+        console.log('Weather Data: ', weatherData);
+        const forecastData = await forecast.json();
+
+        this.#processData({ weatherData, forecastData, name });
+      } catch {
+        alert('could not fetch');
+      }
+    }
   }
 
-  #processData({ weatherData = {}, forecastData = {} }) {
-    const { name } = weatherData;
-
+  #processData({ weatherData = {}, forecastData = {}, name = 'Unknown' }) {
     const { icon } = weatherData.weather[0];
 
     const days = [
@@ -76,13 +93,13 @@ class App {
       today.getMonth() + 1
     }.${today.getFullYear()}`;
 
-    const temperature = `${Math.round(weatherData.main.temp)} °C`;
+    const temperature = `${Math.round(weatherData.main.temp)}°C`;
 
-    const chanceOfRain = `${forecastData.list[0].pop * 100} %`;
+    const chanceOfRain = `${forecastData.list[0].pop * 100}%`;
 
-    const speed = `${Math.round(weatherData.wind.speed * 3.6)} km/h`;
+    const speed = `${Math.round(weatherData.wind.speed * 3.6)}km/h`;
 
-    const humidity = `${weatherData.main.humidity} %`;
+    const humidity = `${weatherData.main.humidity}%`;
 
     let sunrise = new Date(weatherData.sys.sunrise * 1000);
     [sunrise] = sunrise.toTimeString().match(/^(\d{2}):(\d{2})/);
@@ -97,10 +114,12 @@ class App {
         icon: item.weather[0].icon,
         time: item.dt_txt.match(/ (\d{2}:\d{2})/)[1],
         temperature: `${Math.round(item.main.temp)}°C`,
-        chanceOfRain: `${item.pop * 100}%`,
+        chanceOfRain: `${Math.round(item.pop * 100)}%`,
         speed: `${Math.round(item.wind.speed * 3.6)}km/h`,
       });
     });
+
+    if (this.#content.children[1]) this.#content.children[1].remove();
 
     const domObj = buildWeather({
       name,
