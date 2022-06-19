@@ -1,19 +1,71 @@
+import oneDay from './img/01d.svg';
+import oneNight from './img/01n.svg';
+import twoDay from './img/02d.svg';
+import twoNight from './img/02n.svg';
+import threeDay from './img/03d.svg';
+import threeNight from './img/03n.svg';
+import fourDay from './img/04d.svg';
+import fourNight from './img/04n.svg';
+import nineDay from './img/09d.svg';
+import nineNight from './img/09n.svg';
+import tenDay from './img/10d.svg';
+import tenNight from './img/10n.svg';
+import elevenDay from './img/11d.svg';
+import elevenNight from './img/11n.svg';
+import thirteenDay from './img/13d.svg';
+import thirteenNight from './img/13n.svg';
+import fiftyDay from './img/50d.svg';
+import fiftyNight from './img/50n.svg';
+
+const img = {
+  '01d': oneDay,
+  '01n': oneNight,
+  '02d': twoDay,
+  '02n': twoNight,
+  '03d': threeDay,
+  '03n': threeNight,
+  '04d': fourDay,
+  '04n': fourNight,
+  '09d': nineDay,
+  '09n': nineNight,
+  '10d': tenDay,
+  '10n': tenNight,
+  '11d': elevenDay,
+  '11n': elevenNight,
+  '13d': thirteenDay,
+  '13n': thirteenNight,
+  '50d': fiftyDay,
+  '50n': fiftyNight,
+};
+
 const create = (element = 'div') => document.createElement(element);
 
 function buildPage() {
-  const searchDiv = create();
-  searchDiv.id = 'header';
+  const header = create();
+  header.id = 'header';
+  const searchContainer = create();
+  searchContainer.id = 'search-container';
   const search = create('input');
   search.type = 'search';
   search.placeholder = 'Search for a city';
-  searchDiv.append(search);
+  const errorMsg = create('span');
+  searchContainer.append(search, errorMsg);
+  const select = create();
+  select.id = 'select';
+  const celsius = create('button');
+  celsius.id = 'celsius';
+  celsius.classList.add('active');
+  celsius.textContent = '°C';
+  const fahrenheit = create('button');
+  fahrenheit.id = 'fahrenheit';
+  fahrenheit.textContent = '°F';
+  select.append(celsius, fahrenheit);
+  header.append(searchContainer, select);
 
-  return [searchDiv, search];
+  return [header, search, celsius, fahrenheit, errorMsg];
 }
 
 function buildWeather(data) {
-  console.log(data);
-
   const domObj = create();
   domObj.id = 'container';
 
@@ -24,7 +76,7 @@ function buildWeather(data) {
   const date = create('p');
   date.textContent = data.today;
   const icon = create('img');
-  icon.src = `https://openweathermap.org/img/wn/${data.icon}@2x.png`;
+  icon.src = img[data.icon];
   const temperature = create('p');
   temperature.textContent = data.temperature;
   const rainLabel = create('p');
@@ -52,13 +104,17 @@ function buildWeather(data) {
   sunsetLabel.textContent = 'Sunset:';
   const sunset = create('p');
   sunset.textContent = data.sunset;
+
+  today.append(city, date, icon, temperature, rainLabel, rain);
+  if (data.rain != null) {
+    const rainVolumeLabel = create('p');
+    rainVolumeLabel.classList.add('label');
+    rainVolumeLabel.textContent = 'Volume/h:';
+    const rainVolume = create('p');
+    rainVolume.textContent = data.rain;
+    today.append(rainVolumeLabel, rainVolume);
+  }
   today.append(
-    city,
-    date,
-    icon,
-    temperature,
-    rainLabel,
-    rain,
     windLabel,
     wind,
     humidityLabel,
@@ -75,7 +131,7 @@ function buildWeather(data) {
     const card = create();
     card.classList.add('card');
     const forecastIcon = create('img');
-    forecastIcon.src = `https://openweathermap.org/img/wn/${item.icon}@2x.png`;
+    forecastIcon.src = img[item.icon];
     const time = create('p');
     time.textContent = item.time;
     const forecastTemperature = create('p');
@@ -95,10 +151,18 @@ function buildWeather(data) {
       forecastIcon,
       forecastTemperature,
       forecastRainLabel,
-      forecastRain,
-      forecastWindLabel,
-      forecastWind
+      forecastRain
     );
+    if (item.rain != null) {
+      const forecastRainVolumeLabel = create('p');
+      forecastRainVolumeLabel.classList.add('label');
+      forecastRainVolumeLabel.textContent = 'Volume/3h:';
+      const forecastRainVolume = create('p');
+      forecastRainVolume.textContent = item.rain;
+
+      card.append(forecastRainVolumeLabel, forecastRainVolume);
+    }
+    card.append(forecastWindLabel, forecastWind);
     forecast.append(card);
   });
 
