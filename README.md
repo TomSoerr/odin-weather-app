@@ -16,7 +16,7 @@ The forecast is for one day.
 ## Links
 - [Live Preview](https://tomsoerr.github.io/odin-weather-app/)
 - Link to the [Assignment](https://www.theodinproject.com/lessons/node-path-javascript-weather-app)
-- See my next [Project](https://github.com/TomSoerr/odin-testing-practice)
+- See my next [Project](https://github.com/TomSoerr/odin-battleship
 
 ## Notes
 I use the free Current Weather, 3-hour Forecast 5 days, and Geocoding APIs 
