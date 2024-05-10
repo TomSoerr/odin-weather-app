@@ -1,5 +1,5 @@
-import './style.css';
-import { buildPage, buildWeather } from './buildDom';
+import "./style.css";
+import { buildPage, buildWeather } from "./buildDom";
 
 class App {
   #content;
@@ -14,36 +14,36 @@ class App {
 
   constructor() {
     // this is a free key
-    this.#openWeatherMap = 'ce8fef5a5b6a247296d4aeaa5e8ef82a';
-    this.#units = 'metric'; // imperial
-    this.#current = 'Bayern';
+    this.#openWeatherMap = "ce8fef5a5b6a247296d4aeaa5e8ef82a";
+    this.#units = "metric"; // imperial
+    this.#current = "Bayern";
 
-    this.#content = document.createElement('div');
-    this.#content.id = 'content';
+    this.#content = document.createElement("div");
+    this.#content.id = "content";
     document.body.append(this.#content);
 
     const [domObj, search, celsius, fahrenheit, errorMsg] = buildPage();
 
     this.#errorSpan = errorMsg;
 
-    search.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') {
+    search.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") {
         this.#callApi(search.value);
-        search.value = '';
+        search.value = "";
       }
     });
 
-    celsius.addEventListener('click', () => {
-      celsius.classList.add('active');
-      fahrenheit.classList.remove('active');
-      this.#units = 'metric';
+    celsius.addEventListener("click", () => {
+      celsius.classList.add("active");
+      fahrenheit.classList.remove("active");
+      this.#units = "metric";
       this.#callApi();
     });
 
-    fahrenheit.addEventListener('click', () => {
-      celsius.classList.remove('active');
-      fahrenheit.classList.add('active');
-      this.#units = 'imperial';
+    fahrenheit.addEventListener("click", () => {
+      celsius.classList.remove("active");
+      fahrenheit.classList.add("active");
+      this.#units = "imperial";
       this.#callApi();
     });
 
@@ -63,7 +63,7 @@ class App {
         `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${
           this.#openWeatherMap
         }`,
-        { mode: 'cors' }
+        { mode: "cors" }
       );
       const geoData = await geoResponse.json();
 
@@ -73,10 +73,10 @@ class App {
       if (geoData[0].state && geoData[0].state !== geoData[0].name) {
         name += `, ${geoData[0].state}`;
       }
-      this.#errorSpan.textContent = '';
+      this.#errorSpan.textContent = "";
     } catch (error) {
       console.log(error);
-      this.#errorSpan.textContent = 'City not found';
+      this.#errorSpan.textContent = "City not found";
     }
 
     if (lat != null && lon != null && name != null) {
@@ -87,7 +87,7 @@ class App {
               `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${
                 this.#openWeatherMap
               }&units=${this.#units}`,
-              { mode: 'cors' }
+              { mode: "cors" }
             );
             const weather = await weatherResponse.json();
             return weather;
@@ -97,7 +97,7 @@ class App {
               `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&cnt=8&appid=${
                 this.#openWeatherMap
               }&units=${this.#units}`,
-              { mode: 'cors' }
+              { mode: "cors" }
             );
             const forecast = await forecastResponse.json();
             return forecast;
@@ -105,25 +105,25 @@ class App {
         ]);
 
         this.#processData({ weatherData, forecastData, name });
-        this.#errorSpan.textContent = '';
+        this.#errorSpan.textContent = "";
       } catch (error) {
         console.log(error);
-        this.#errorSpan.textContent = 'Could not fetch data';
+        this.#errorSpan.textContent = "Could not fetch data";
       }
     }
   }
 
-  #processData({ weatherData = {}, forecastData = {}, name = 'Unknown' }) {
+  #processData({ weatherData = {}, forecastData = {}, name = "Unknown" }) {
     const { icon } = weatherData.weather[0];
 
     const days = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
     ];
     let today = new Date();
     today = `${days[today.getDay()]}, ${today.getDate()}.${
@@ -131,14 +131,14 @@ class App {
     }.${today.getFullYear()}`;
 
     const temperature =
-      this.#units === 'metric'
+      this.#units === "metric"
         ? `${Math.round(weatherData.main.temp)}°C`
         : `${Math.round(weatherData.main.temp)}°F`;
 
     const chanceOfRain = `${forecastData.list[0].pop * 100}%`;
 
     const speed =
-      this.#units === 'metric'
+      this.#units === "metric"
         ? `${Math.round(weatherData.wind.speed * 3.6)}km/h`
         : `${Math.round(weatherData.wind.speed)}mph`;
 
@@ -157,18 +157,18 @@ class App {
         icon: item.weather[0].icon,
         time: item.dt_txt.match(/ (\d{2}:\d{2})/)[1],
         temperature:
-          this.#units === 'metric'
+          this.#units === "metric"
             ? `${Math.round(item.main.temp)}°C`
             : `${Math.round(item.main.temp)}°F`,
         chanceOfRain: `${Math.round(item.pop * 100)}%`,
         speed:
-          this.#units === 'metric'
+          this.#units === "metric"
             ? `${Math.round(item.wind.speed * 3.6)}km/h`
             : `${Math.round(item.wind.speed)}mph`,
       };
 
-      if ('rain' in item && '3h' in item.rain) {
-        obj.rain = `${item.rain['3h']}mm`;
+      if ("rain" in item && "3h" in item.rain) {
+        obj.rain = `${item.rain["3h"]}mm`;
       }
       forecast.push(obj);
     });
@@ -187,11 +187,52 @@ class App {
       sunrise,
       forecast,
     };
-    if ('rain' in weatherData && '1h' in weatherData.rain) {
-      obj.rain = `${weatherData.rain['1h']}mm`;
+    if ("rain" in weatherData && "1h" in weatherData.rain) {
+      obj.rain = `${weatherData.rain["1h"]}mm`;
     }
     const domObj = buildWeather(obj);
     this.#content.append(domObj);
+
+    // Added afterwards
+
+    const template = document.createElement("template");
+    template.innerHTML = `
+        <a
+      style="
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        color: black;
+        background-color: white;
+        text-decoration: none;
+        font-size: 16px;
+        font-family: sans-serif;
+        padding: 2px;
+        border: thin solid black;
+        text-decoration: underline;
+      "
+      href="https://tomsoerr.github.io/#/impressum"
+    >
+      Imprint
+    </a>
+    <span
+      style="
+        z-index: 1000;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        color: black;
+        background-color: white;
+        text-decoration: none;
+        font-size: 16px;
+        font-family: sans-serif;
+        padding: 2px;
+        border: thin solid black;
+      "
+    >
+      Not a commercial site, only for educational purposes.
+    </span>`;
+    document.body.append(template.content);
   }
 }
 

@@ -14,6 +14,8 @@ This project has:
 The forecast is for one day.
 
 ## Links
+
+- [Imprint](https://tomsoerr.github.io/#/impressum)
 - [Live Preview](https://tomsoerr.github.io/odin-weather-app/)
 - Link to the [Assignment](https://www.theodinproject.com/lessons/node-path-javascript-weather-app)
 - See my next [Project](https://github.com/TomSoerr/odin-battleship)
